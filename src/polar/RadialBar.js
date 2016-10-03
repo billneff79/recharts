@@ -94,7 +94,7 @@ class RadialBar extends Component {
   }
 
   getSectors() {
-    const { cx, cy, startAngle, endAngle,
+    const { cx, cy, startAngle,
            data, minAngle, maxAngle } = this.props;
     const maxValue = Math.max.apply(null, data.map(entry => Math.abs(entry.value)));
     const absMinAngle = Math.abs(minAngle);
@@ -136,8 +136,7 @@ class RadialBar extends Component {
 
     const labelSize = getStringSize(labelContent, style);
     const deltaAngle = labelSize.width / (radius * RADIAN);
-    let tempStartAngle;
-    let tempEndAngle;
+    let tempStartAngle, tempEndAngle;
 
     if (clockWise) {
       tempStartAngle = orientation === 'inner' ?
@@ -182,7 +181,7 @@ class RadialBar extends Component {
   }
 
   renderSectors(sectors) {
-    const { className, shape, activeShape, activeIndex, data } = this.props;
+    const { shape, activeShape, activeIndex } = this.props;
     const {
       animationEasing,
       animationDuration,
@@ -231,6 +230,7 @@ class RadialBar extends Component {
     const backgroundProps = getPresentationAttributes(background);
 
     return sectors.map((entry, i) => {
+			// eslint-disable-next-line no-unused-vars
       const { value, ...rest } = entry;
       const props = {
         ...rest,

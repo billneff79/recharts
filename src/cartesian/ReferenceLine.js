@@ -7,6 +7,7 @@ import Layer from '../container/Layer';
 import Text from '../component/Text';
 import { PRESENTATION_ATTRIBUTES, getPresentationAttributes } from '../util/ReactUtils';
 import { validateCoordinateInRange } from '../util/DataUtils';
+import classNames from 'classnames';
 import _ from 'lodash';
 
 @pureRender
@@ -149,7 +150,7 @@ class ReferenceLine extends Component {
     const props = getPresentationAttributes(this.props);
 
     return (
-      <Layer className="recharts-reference-line">
+      <Layer className={classNames('recharts-reference-line', this.props.className)}>
         <line
           {...props}
           className="recharts-reference-line-line"

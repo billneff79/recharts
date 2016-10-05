@@ -1,4 +1,4 @@
-/* eslint-disable max-len, react/prop-types */
+/* eslint-disable max-len, react/prop-types, react/jsx-indent, react/prop-types */
 import React from 'react';
 import { expect } from 'chai';
 // eslint-disable-next-line import/no-unresolved
@@ -266,7 +266,7 @@ describe('<LineChart />', () => {
     expect(lineDots.childAt(2).props().cy).to.equal(100);
 
 		// simulate a brush to only include the data elements at indices 2-4
-    wrapper.instance().handleBrushChange({ startIndex: 2, endIndex: 4 });
+    wrapper.instance().handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
 
 		// we should only have three dots now
     const newLineDots = wrapper.find('.recharts-line-dots');
@@ -285,6 +285,101 @@ describe('<LineChart />', () => {
 
   });
 
+
+});
+
+describe('<LineChart /> - brushAffects', () => {
+  const brushAffectsLineChart = ({ hasBrush = false, props }) =>
+    <LineChart width={400} height={400} data={data} syncId="test" {...props}>
+      <Line isAnimationActive={false} type="monotone" dataKey="uv" stroke="#ff7300" />
+			{hasBrush ? <Brush /> : null}
+    </LineChart>;
+
+  const totalChart = (props) =>
+    <div>
+			{brushAffectsLineChart({})}
+			{brushAffectsLineChart({ hasBrush: true, props })}
+		</div>;
+
+  const verifyDotsForChild = ({ lineCharts, childIndex, numDots }) => {
+    const lineDots = lineCharts.at(childIndex).find('.recharts-line-dots');
+    expect(lineDots.length).to.equal(1);
+    expect(lineDots.at(0).children().length).to.equal(numDots);
+  };
+
+  it('should sync both charts when no brushAffects prop is supplied', () => {
+
+    const wrapper = mount(totalChart());
+    const lineCharts = wrapper.find(LineChart);
+    expect(lineCharts.length).to.equal(2);
+
+		// find the lineDots from both graphs.  Both should have 6 dots at this point
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+
+		// simulate a brush to only include the data elements at indices 2-4
+    lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
+
+		// find the lineDots from both graphs.  Both should have 3 dots at this point
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 3 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
+  });
+
+  it('should sync both charts when brushAffects="all" prop is supplied', () => {
+
+    const wrapper = mount(totalChart({ brushAffects: 'all' }));
+    const lineCharts = wrapper.find(LineChart);
+    expect(lineCharts.length).to.equal(2);
+
+		// find the lineDots from both graphs.  Both should have 6 dots at this point
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+
+		// simulate a brush to only include the data elements at indices 2-4
+    lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
+
+		// find the lineDots from both graphs.  Both should have 3 dots at this point
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 3 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
+  });
+
+  it('should sync only self chart when brushAffects="self" prop is supplied', () => {
+
+    const wrapper = mount(totalChart({ brushAffects: 'self' }));
+    const lineCharts = wrapper.find(LineChart);
+    expect(lineCharts.length).to.equal(2);
+
+		// find the lineDots from both graphs.  Both should have 6 dots at this point
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+
+		// simulate a brush to only include the data elements at indices 2-4
+    lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
+
+		// find the lineDots from both graphs.  Both should have 3 dots at this point
+		// first change shouldn't change
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
+  });
+
+  it('should sync only other chart when brushAffects="others" prop is supplied', () => {
+
+    const wrapper = mount(totalChart({ brushAffects: 'others' }));
+    const lineCharts = wrapper.find(LineChart);
+    expect(lineCharts.length).to.equal(2);
+
+		// find the lineDots from both graphs.  Both should have 6 dots at this point
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+
+		// simulate a brush to only include the data elements at indices 2-4
+    lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
+
+		// find the lineDots from both graphs.  Both should have 3 dots at this point
+		// first change shouldn't change
+    verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 3 });
+    verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+  });
 
 });
 

@@ -45,6 +45,8 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
       width: PropTypes.number,
       height: PropTypes.number,
       data: PropTypes.arrayOf(PropTypes.object),
+      startIndex: PropTypes.number,
+      endIndex: PropTypes.number,
       layout: PropTypes.oneOf(['horizontal', 'vertical']),
       stackOffset: PropTypes.oneOf(['sign', 'expand', 'none', 'wiggle', 'silhouette']),
       margin: PropTypes.shape({
@@ -53,6 +55,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
         bottom: PropTypes.number,
         left: PropTypes.number,
       }),
+      brushAffects: PropTypes.oneOf(['all', 'self', 'others']),
       style: PropTypes.object,
       className: PropTypes.string,
       children: PropTypes.oneOfType([
@@ -69,9 +72,16 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
     constructor(props) {
       super(props);
+
       const defaultState = this.createDefaultState(this.props);
-      this.state = { ...defaultState,
-				...this.updateStateOfAxisMapsOffsetAndStackGroups({ props, ...defaultState }) };
+
+			// this will be a no-op if the startIndex/endIndex are not defined or are the
+			// same as the defaults, otherwise it sync's the other graphs appropriately
+      this.state = defaultState;
+      this.handleBrushChange(this.props);
+
+      this.state = { ...this.state,
+				...this.updateStateOfAxisMapsOffsetAndStackGroups({ props, ...this.state }) };
       this.validateAxes();
       this.uniqueChartId = _.uniqueId('recharts');
     }
@@ -84,7 +94,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.data !== this.props.data) {
-        const defaultState = this.createDefaultState(this.props);
+        const defaultState = this.createDefaultState(nextProps);
         this.setState({ ...defaultState,
 					...this.updateStateOfAxisMapsOffsetAndStackGroups(
 						{ props: this.props, ...defaultState }) }
@@ -98,6 +108,10 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
       if (!_.isNil(this.props.syncId) && _.isNil(nextProps.syncId)) {
         this.removeListener();
       }
+
+			// this will be a no-op if the startIndex/endIndex are not defined or are the
+			// same as the defaults, otherwise it sync's the other graphs appropriately
+      this.handleBrushChange(nextProps);
     }
 
     componentWillUnmount() {
@@ -545,7 +559,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
     handleReceiveSyncEvent = (cId, chartId, data) => {
       const { syncId } = this.props;
 
-      if (syncId === cId && chartId !== this.chartId) {
+      if (syncId === cId && chartId !== this.uniqueChartId) {
         this.setState(data);
         const { dataStartIndex, dataEndIndex } = data;
         if (data.dataStartIndex || data.dataEndIndex) {
@@ -556,23 +570,39 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
       }
     };
 
-    handleBrushChange = ({ startIndex, endIndex }) => {
+		/*
+		 * update the state with the new brush extents.  Synchronize with other charts as appropriate.
+		 * Outcome depends on brushAffects property.  If 'all' (default), update this graph and the
+		 * sync'd graphs.  If 'self', update this graph but not sync'd graphs.  If 'others', update
+		 * other graphs but not this one
+		 */
+    handleBrushChange = ({ startIndex = this.state.dataStartIndex,
+				endIndex = this.state.dataEndIndex, brushAffects = 'all', ...otherProps }) => {
+
 			// Only trigger changes if the extents of the brush have actually changed
       if (startIndex !== this.state.dataStartIndex || endIndex !== this.state.dataEndIndex) {
-        this.setState({
-          dataStartIndex: startIndex,
-          dataEndIndex: endIndex,
-          ...this.updateStateOfAxisMapsOffsetAndStackGroups(
-						{ props: this.props, dataStartIndex: startIndex, dataEndIndex: endIndex }
-					),
-        });
+        if (brushAffects !== 'others') {
+          this.setState({
+            dataStartIndex: startIndex,
+            dataEndIndex: endIndex,
+            ...this.updateStateOfAxisMapsOffsetAndStackGroups(
+							{ props: otherProps, dataStartIndex: startIndex, dataEndIndex: endIndex }
+						),
+          });
+        }
 
-        this.triggerSyncEvent({
-          dataStartIndex: startIndex,
-          dataEndIndex: endIndex,
-        });
+        if (brushAffects !== 'self') {
+          this.triggerSyncEvent({
+            dataStartIndex: startIndex,
+            dataEndIndex: endIndex,
+          });
+        }
       }
     };
+
+    handleBrushChangeForThis = ({ startIndex, endIndex }) =>
+			this.handleBrushChange({ ...this.props, startIndex, endIndex });
+
     /**
      * The handler of mouse entering chart
      * @param  {Object} offset   The offset of main part in the svg element
@@ -815,7 +845,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
       if (!brushItem) { return null; }
 
       return React.cloneElement(brushItem, {
-        onChange: this.handleBrushChange,
+        onChange: this.handleBrushChangeForThis,
         data,
         x: offset.left,
         y: offset.top + offset.height + offset.brushBottom - (margin.bottom || 0),

@@ -70,20 +70,22 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
       margin: { top: 5, right: 5, bottom: 5, left: 5 },
     };
 
+
     constructor(props) {
       super(props);
-
-      const defaultState = this.createDefaultState(this.props);
-
-			// this will be a no-op if the startIndex/endIndex are not defined or are the
-			// same as the defaults, otherwise it sync's the other graphs appropriately
-      this.state = defaultState;
-      this.handleBrushChange(this.props);
-
-      this.state = { ...this.state,
-				...this.updateStateOfAxisMapsOffsetAndStackGroups({ props, ...this.state }) };
+      this.state = this.createDefaultState(props);
       this.validateAxes();
       this.uniqueChartId = _.uniqueId('recharts');
+    }
+
+    componentWillMount() {
+			// set the startIndex and endIndex state appropriately
+			// handleBrushChange also calls updateStateOfAxisMapsOffsetAndStackGroups
+			// so only call that if handleBrush change didn't need to make a change
+      if (!this.handleBrushChangeForThis(this.props)) {
+        this.setState(
+						this.updateStateOfAxisMapsOffsetAndStackGroups({ props: this.props, ...this.state }));
+      }
     }
 
     componentDidMount() {
@@ -570,17 +572,25 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
       }
     };
 
-		/*
+		/**
 		 * update the state with the new brush extents.  Synchronize with other charts as appropriate.
 		 * Outcome depends on brushAffects property.  If 'all' (default), update this graph and the
 		 * sync'd graphs.  If 'self', update this graph but not sync'd graphs.  If 'others', update
 		 * other graphs but not this one
+		 *
+		 * @return {Boolean} true if it updated the state, false otherwise
 		 */
     handleBrushChange = ({ startIndex = this.state.dataStartIndex,
 				endIndex = this.state.dataEndIndex, brushAffects = 'all', ...otherProps }) => {
 
 			// Only trigger changes if the extents of the brush have actually changed
       if (startIndex !== this.state.dataStartIndex || endIndex !== this.state.dataEndIndex) {
+        if (brushAffects !== 'self') {
+          this.triggerSyncEvent({
+            dataStartIndex: startIndex,
+            dataEndIndex: endIndex,
+          });
+        }
         if (brushAffects !== 'others') {
           this.setState({
             dataStartIndex: startIndex,
@@ -589,15 +599,10 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 							{ props: otherProps, dataStartIndex: startIndex, dataEndIndex: endIndex }
 						),
           });
-        }
-
-        if (brushAffects !== 'self') {
-          this.triggerSyncEvent({
-            dataStartIndex: startIndex,
-            dataEndIndex: endIndex,
-          });
+          return true;
         }
       }
+      return false;
     };
 
     handleBrushChangeForThis = ({ startIndex, endIndex }) =>

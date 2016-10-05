@@ -384,6 +384,90 @@ describe('<LineChart /> - brushAffects', () => {
 });
 
 
+describe('<LineChart /> - startIndex and endIndex', () => {
+  const chart = (props) =>
+    <LineChart width={400} height={400} data={data} syncId="test" {...props}>
+      <Line isAnimationActive={false} type="monotone" dataKey="uv" stroke="#ff7300" />
+			<Brush />
+    </LineChart>;
+
+  const verifyDots = ({ wrapper, numDots, startIndex, endIndex }) => {
+    const lineDots = wrapper.find('.recharts-line-dots');
+    expect(lineDots.length).to.equal(1);
+    expect(lineDots.at(0).children().length).to.equal(numDots);
+    expect(lineDots.childAt(0).props().payload.value).to.equal(data[startIndex].uv);
+    expect(lineDots.childAt(numDots - 1).props().payload.value).to.equal(data[endIndex].uv);
+  };
+
+  it('should display from startIndex to end if only startIndex is defined', () => {
+
+    const wrapper = mount(chart({ startIndex: 2 }));
+
+		// make sure the right dots are shown
+    verifyDots({ wrapper, numDots: 4, startIndex: 2, endIndex: 5 });
+
+		// make sure the brush is in the right position
+    let brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(2);
+    expect(brushProps.endIndex).to.equal(5);
+
+		// make sure brush still works
+    wrapper.instance().handleBrushChangeForThis({ startIndex: 0, endIndex: 3 });
+
+		// makek sure the right dots are shown
+    verifyDots({ wrapper, numDots: 4, startIndex: 0, endIndex: 3 });
+    brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(0);
+    expect(brushProps.endIndex).to.equal(3);
+  });
+
+  it('should display from 0 to endIndex if only endIndex is defined', () => {
+
+    const wrapper = mount(chart({ endIndex: 3 }));
+
+		// make sure the right dots are shown
+    verifyDots({ wrapper, numDots: 4, startIndex: 0, endIndex: 3 });
+
+		// make sure the brush is in the right position
+    let brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(0);
+    expect(brushProps.endIndex).to.equal(3);
+
+		// make sure brush still works
+    wrapper.instance().handleBrushChangeForThis({ startIndex: 2, endIndex: 3 });
+
+		// makek sure the right dots are shown
+    verifyDots({ wrapper, numDots: 2, startIndex: 2, endIndex: 3 });
+    brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(2);
+    expect(brushProps.endIndex).to.equal(3);
+  });
+
+  it('should display from startIndex to endIndex if both are defined', () => {
+
+    const wrapper = mount(chart({ startIndex: 2, endIndex: 3 }));
+
+		// make sure the right dots are shown
+    verifyDots({ wrapper, numDots: 2, startIndex: 2, endIndex: 3 });
+
+		// make sure the brush is in the right position
+    let brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(2);
+    expect(brushProps.endIndex).to.equal(3);
+
+		// make sure brush still works
+    wrapper.instance().handleBrushChangeForThis({ startIndex: 4, endIndex: 5 });
+
+		// makek sure the right dots are shown
+    verifyDots({ wrapper, numDots: 2, startIndex: 4, endIndex: 5 });
+    brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(4);
+    expect(brushProps.endIndex).to.equal(5);
+  });
+
+
+});
+
 describe('<LineChart /> - Pure Rendering', () => {
   const pureElements = [Line];
 

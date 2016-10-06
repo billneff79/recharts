@@ -29,7 +29,7 @@ class Brush extends Component {
     startIndex: PropTypes.number,
     endIndex: PropTypes.number,
     tickFormatter: PropTypes.func,
-    brushAffects: PropTypes.oneOf(['all', 'self', 'others']),
+    affectedCharts: PropTypes.oneOf(['all', 'self', 'others']),
     overlayChart: PropTypes.bool,
     onChange: PropTypes.func,
   };
@@ -43,7 +43,7 @@ class Brush extends Component {
     fill: '#fff',
     stroke: '#666',
     overlayChart: false,
-    brushAffects: 'all',
+    affectedCharts: 'all',
   };
 
   constructor(props) {

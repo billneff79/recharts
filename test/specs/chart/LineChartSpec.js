@@ -288,8 +288,8 @@ describe('<LineChart />', () => {
 
 });
 
-describe('<LineChart /> - <Brush /> brushAffects prop', () => {
-  const brushAffectsLineChart = ({ hasBrush = false, props }) =>
+describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
+  const affectedChartsLineChart = ({ hasBrush = false, props }) =>
     <LineChart width={400} height={400} data={data} syncId="test">
       <Line isAnimationActive={false} type="monotone" dataKey="uv" stroke="#ff7300" />
 			{hasBrush ? <Brush {...props} /> : null}
@@ -297,8 +297,8 @@ describe('<LineChart /> - <Brush /> brushAffects prop', () => {
 
   const totalChart = (props) =>
     <div>
-			{brushAffectsLineChart({})}
-			{brushAffectsLineChart({ hasBrush: true, props })}
+			{affectedChartsLineChart({})}
+			{affectedChartsLineChart({ hasBrush: true, props })}
 		</div>;
 
   const verifyDotsForChild = ({ lineCharts, childIndex, numDots }) => {
@@ -307,7 +307,7 @@ describe('<LineChart /> - <Brush /> brushAffects prop', () => {
     expect(lineDots.at(0).children().length).to.equal(numDots);
   };
 
-  it('should sync both charts when no brushAffects prop is supplied', () => {
+  it('should sync both charts when no affectedCharts prop is supplied', () => {
 
     const wrapper = mount(totalChart());
     const lineCharts = wrapper.find(LineChart);
@@ -325,9 +325,9 @@ describe('<LineChart /> - <Brush /> brushAffects prop', () => {
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
   });
 
-  it('should sync both charts when brushAffects="all" prop is supplied', () => {
+  it('should sync both charts when affectedCharts="all" prop is supplied', () => {
 
-    const wrapper = mount(totalChart({ brushAffects: 'all' }));
+    const wrapper = mount(totalChart({ affectedCharts: 'all' }));
     const lineCharts = wrapper.find(LineChart);
     expect(lineCharts.length).to.equal(2);
 
@@ -343,9 +343,9 @@ describe('<LineChart /> - <Brush /> brushAffects prop', () => {
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
   });
 
-  it('should sync only self chart when brushAffects="self" prop is supplied', () => {
+  it('should sync only self chart when affectedCharts="self" prop is supplied', () => {
 
-    const wrapper = mount(totalChart({ brushAffects: 'self' }));
+    const wrapper = mount(totalChart({ affectedCharts: 'self' }));
     const lineCharts = wrapper.find(LineChart);
     expect(lineCharts.length).to.equal(2);
 
@@ -362,9 +362,9 @@ describe('<LineChart /> - <Brush /> brushAffects prop', () => {
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
   });
 
-  it('should sync only other chart when brushAffects="others" prop is supplied', () => {
+  it('should sync only other chart when affectedCharts="others" prop is supplied', () => {
 
-    const wrapper = mount(totalChart({ brushAffects: 'others' }));
+    const wrapper = mount(totalChart({ affectedCharts: 'others' }));
     const lineCharts = wrapper.find(LineChart);
     expect(lineCharts.length).to.equal(2);
 

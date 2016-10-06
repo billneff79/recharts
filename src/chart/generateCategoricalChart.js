@@ -573,7 +573,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
 		/**
 		 * update the state with the new brush extents.  Synchronize with other charts as appropriate.
-		 * Outcome depends on brushAffects property.  If 'all' (default), update this graph and the
+		 * Outcome depends on affectedCharts property.  If 'all' (default), update this graph and the
 		 * sync'd graphs.  If 'self', update this graph but not sync'd graphs.  If 'others', update
 		 * other graphs but not this one
 		 *
@@ -583,20 +583,20 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 			endIndex = this.state.dataEndIndex, ...otherProps }) => {
 
       const brushItem = findChildByType(otherProps.children, Brush);
-      let brushAffects = 'all';
-      if (brushItem && brushItem.props.brushAffects) {
-        brushAffects = brushItem.props.brushAffects;
+      let affectedCharts = 'all';
+      if (brushItem && brushItem.props.affectedCharts) {
+        affectedCharts = brushItem.props.affectedCharts;
       }
 
 			// Only trigger changes if the extents of the brush have actually changed
       if (startIndex !== this.state.dataStartIndex || endIndex !== this.state.dataEndIndex) {
-        if (brushAffects !== 'self') {
+        if (affectedCharts !== 'self') {
           this.triggerSyncEvent({
             dataStartIndex: startIndex,
             dataEndIndex: endIndex,
           });
         }
-        if (brushAffects !== 'others') {
+        if (affectedCharts !== 'others') {
           this.setState({
             dataStartIndex: startIndex,
             dataEndIndex: endIndex,

@@ -1,6 +1,6 @@
 {
   "name": "recharts",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "React charts",
   "main": "lib/index",
   "jsnext:main": "es6/index",
@@ -91,6 +91,7 @@
     "karma-coveralls": "^1.1.2",
     "karma-firefox-launcher": "^1.0.0",
     "karma-mocha": "^1.1.0",
+    "karma-mocha-reporter": "^2.2.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.7.0",
     "lodash-webpack-plugin": "^0.10.1",

@@ -288,11 +288,11 @@ describe('<LineChart />', () => {
 
 });
 
-describe('<LineChart /> - brushAffects', () => {
+describe('<LineChart /> - <Brush /> brushAffects prop', () => {
   const brushAffectsLineChart = ({ hasBrush = false, props }) =>
-    <LineChart width={400} height={400} data={data} syncId="test" {...props}>
+    <LineChart width={400} height={400} data={data} syncId="test">
       <Line isAnimationActive={false} type="monotone" dataKey="uv" stroke="#ff7300" />
-			{hasBrush ? <Brush /> : null}
+			{hasBrush ? <Brush {...props} /> : null}
     </LineChart>;
 
   const totalChart = (props) =>
@@ -520,6 +520,92 @@ describe('<LineChart /> - Pure Rendering', () => {
     wrapper.instance().handleBrushChange({ startIndex: 0, endIndex: data.length - 1 });
     spies.forEach((el) => expect(el.callCount).to.equal(1));
     expect(axisSpy.callCount).to.equal(2);
+  });
+
+});
+
+describe('<LineChart /> - <Brush /> overlayChart prop', () => {
+  const margin = { top: 5, right: 5, bottom: 5, left: 5 },
+    chartHeight = 400,
+    chartWidth = 400,
+    xAxisHeight = 30,
+    yAxisWidth = 40,
+    legendHeight = 20;
+
+
+  const lineChart = (props) =>
+    <LineChart width={chartWidth} height={chartHeight} data={data} margin={margin}>
+      <Line isAnimationActive={false} type="monotone" dataKey="uv" stroke="#ff7300" />
+			<XAxis height={xAxisHeight} />
+			<YAxis width={yAxisWidth} />
+			<Brush {...props} />
+			<Legend height={legendHeight} />
+    </LineChart>;
+
+  it('should overlay the chart when overlayChart is true and default the width/height to that of the chart', () => {
+
+    const wrapper = mount(lineChart({ overlayChart: true }));
+    const brush = wrapper.find(Brush);
+    expect(brush.length).to.equal(1);
+
+		// verify the axis are placed properly
+		//eslint-disable-next-line
+    let x, y, left, right, top, bottom, height, width, axisType;
+
+    wrapper.find(CartesianAxis).forEach((el) => {
+      ({ x, y, height, width, axisType } = el.props());
+      if (axisType === 'xAxis') {
+        expect({ x, y, height, width }).
+					to.eql({ x: 45, y: 345, height: 30, width: 350 });
+      } else {
+        expect({ x, y, height, width }).
+					to.eql({ x: 5, y: 5, height: 340, width: 40 });
+      }
+    });
+
+		// verify Brush position
+    ({ x, y, height, width } = wrapper.find(Brush).at(0).props());
+    expect({ x, y, height, width }).
+			to.eql({ x: 45, y: 5, height: 340, width: 350 });
+
+		// verify Line positioning (x,y are fuzzy and calculated relative to dots and axis
+		// eslint-disable-next-line prefer-const
+    ({ left, right, top, bottom, height, width } = wrapper.find(Line).at(0).props());
+    expect({ left, right, top, bottom, height, width }).
+				to.eql({ left: 45, right: 5, top: 5, bottom: 55, width: 350, height: 340 });
+
+  });
+
+  it('should not overlay the brush on the chart when overlayChart is not present/false', () => {
+
+    const wrapper = mount(lineChart({ }));
+    const brush = wrapper.find(Brush);
+    expect(brush.length).to.equal(1);
+
+		// verify the axis are placed properly
+		//eslint-disable-next-line
+		let x, y, left, right, top, bottom, height, width, axisType;
+    wrapper.find(CartesianAxis).forEach((el) => {
+      ({ x, y, height, width, axisType } = el.props());
+      if (axisType === 'xAxis') {
+        expect({ x, y, height, width }).
+					to.eql({ x: 45, y: 305, height: 30, width: 350 });
+      } else {
+        expect({ x, y, height, width }).
+					to.eql({ x: 5, y: 5, height: 300, width: 40 });
+      }
+    });
+
+		// verify Brush position
+    ({ x, y, height, width } = wrapper.find(Brush).at(0).props());
+    expect({ x, y, height, width }).
+			to.eql({ x: 45, y: 335, height: 40, width: 350 });
+
+		// verify Line positioning (x,y are fuzzy and calculated relative to dots and axis
+		// eslint-disable-next-line prefer-const
+    ({ left, right, top, bottom, height, width } = wrapper.find(Line).at(0).props());
+    expect({ left, right, top, bottom, height, width }).
+				to.eql({ left: 45, right: 5, top: 5, bottom: 95, width: 350, height: 300 });
   });
 
 });

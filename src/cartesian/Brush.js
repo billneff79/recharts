@@ -16,7 +16,6 @@ class Brush extends Component {
 
   static propTypes = {
     className: PropTypes.string,
-
     fill: PropTypes.string,
     stroke: PropTypes.string,
     x: PropTypes.number.isRequired,
@@ -30,7 +29,8 @@ class Brush extends Component {
     startIndex: PropTypes.number,
     endIndex: PropTypes.number,
     tickFormatter: PropTypes.func,
-
+    brushAffects: PropTypes.oneOf(['all', 'self', 'others']),
+    overlayChart: PropTypes.bool,
     onChange: PropTypes.func,
   };
 
@@ -42,6 +42,8 @@ class Brush extends Component {
     travellerWidth: 5,
     fill: '#fff',
     stroke: '#666',
+    overlayChart: false,
+    brushAffects: 'all',
   };
 
   constructor(props) {

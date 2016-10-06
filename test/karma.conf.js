@@ -4,9 +4,9 @@
 
 var path = require('path');
 
-module.exports = function(config) {
+module.exports = function (config) {
   if (process.env.RELEASE)
-    config.singleRun = true
+    config.singleRun = true;
 
   config.set({
 
@@ -26,7 +26,7 @@ module.exports = function(config) {
     exclude: [
       'test/coverage/**',
       'lib/**',
-      'node_modules/'
+      'node_modules/',
     ],
 
     // preprocess matching files before serving them to the browser
@@ -57,10 +57,10 @@ module.exports = function(config) {
           include: /src/,
           exclude: /node_modules/,
           loader: 'istanbul-instrumenter',
-        }]
+        }],
       },
       externals: {
-        'jsdom': 'window',
+        jsdom: 'window',
         'react/lib/ExecutionEnvironment': true,
         'react/addons': true,
         'react/lib/ReactContext': 'window',
@@ -68,9 +68,9 @@ module.exports = function(config) {
       },
       resolve: {
         alias: {
-          'sinon': 'sinon/pkg/sinon',
-          'recharts': path.resolve('./src/index.js'),
-        }
+          sinon: 'sinon/pkg/sinon',
+          recharts: path.resolve('./src/index.js'),
+        },
       },
       stats: {
         assets: false,
@@ -79,7 +79,7 @@ module.exports = function(config) {
         hash: false,
         timings: false,
         chunks: false,
-        chunkModules: false
+        chunkModules: false,
       },
       debug: false,
     },
@@ -87,43 +87,49 @@ module.exports = function(config) {
     plugins: [
       'karma-webpack',
       'karma-mocha',
+      'karma-mocha-reporter',
       'karma-coverage',
       'karma-chai',
       'karma-sourcemap-loader',
       'karma-firefox-launcher',
       'karma-chrome-launcher',
       'istanbul-instrumenter-loader',
-      'karma-coveralls'
+      'karma-coveralls',
     ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'coverage', 'coveralls'],
+    reporters: ['coverage', 'coveralls', 'mocha'],
 
     coverageReporter: {
-      instrumenters: { isparta : require('isparta') },
+      instrumenters: { isparta: require('isparta') },
       instrumenter: {
-        '**/*.js': 'isparta'
+        '**/*.js': 'isparta',
       },
       instrumenterOptions: {
-        isparta: { babel : { presets: 'es2015' } }
+        isparta: { babel: { presets: 'es2015' } },
       },
       dir: 'test',
       reporters: [{
         type: 'html',
-        subdir: 'coverage'
+        subdir: 'coverage',
       }, {
         type: 'text',
       }, {
         type: 'lcov',
-        subdir: 'coverage'
-      }]
+        subdir: 'coverage',
+      }],
+    },
+
+    mochaReporter: {
+      output: 'autowatch',
+      showDiff: true,
     },
 
     webpackMiddleware: {
       // webpack-dev-middleware configuration
-      noInfo: true
+      noInfo: true,
     },
 
     // web server port

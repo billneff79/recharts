@@ -55,7 +55,6 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
         bottom: PropTypes.number,
         left: PropTypes.number,
       }),
-      brushAffects: PropTypes.oneOf(['all', 'self', 'others']),
       style: PropTypes.object,
       className: PropTypes.string,
       children: PropTypes.oneOfType([
@@ -440,7 +439,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 		 */
     updateStateOfAxisMapsOffsetAndStackGroups({ props, dataStartIndex, dataEndIndex }) {
       const { data } = props;
-      if (!validateWidthHeight({ props }) || !data || !data.length) { return null; }
+      if (!validateWidthHeight({ props }) || !data || !data.length) { return {}; }
 
       const { children, layout, stackOffset } = props;
       const numericIdName = layout === 'horizontal' ? 'yAxis' : 'xAxis';
@@ -533,7 +532,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
       const brushBottom = offsetV.bottom;
 
-      if (brushItem) {
+      if (brushItem && !brushItem.props.overlayChart) {
         offsetV.bottom += brushItem.props.height || Brush.defaultProps.height;
       }
 
@@ -581,7 +580,13 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 		 * @return {Boolean} true if it updated the state, false otherwise
 		 */
     handleBrushChange = ({ startIndex = this.state.dataStartIndex,
-				endIndex = this.state.dataEndIndex, brushAffects = 'all', ...otherProps }) => {
+			endIndex = this.state.dataEndIndex, ...otherProps }) => {
+
+      const brushItem = findChildByType(otherProps.children, Brush);
+      let brushAffects = 'all';
+      if (brushItem && brushItem.props.brushAffects) {
+        brushAffects = brushItem.props.brushAffects;
+      }
 
 			// Only trigger changes if the extents of the brush have actually changed
       if (startIndex !== this.state.dataStartIndex || endIndex !== this.state.dataEndIndex) {
@@ -849,12 +854,20 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
       if (!brushItem) { return null; }
 
+      let y = offset.top + offset.height + offset.brushBottom - (margin.bottom || 0);
+      let overrideHeight = {};
+      if (brushItem.props.overlayChart) {
+        y = offset.top;
+        overrideHeight = { height: offset.height };
+      }
+
       return React.cloneElement(brushItem, {
         onChange: this.handleBrushChangeForThis,
         data,
         x: offset.left,
-        y: offset.top + offset.height + offset.brushBottom - (margin.bottom || 0),
+        y,
         width: offset.width,
+        ...overrideHeight,
         startIndex: dataStartIndex,
         endIndex: dataEndIndex,
       });

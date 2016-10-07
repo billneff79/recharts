@@ -1,4 +1,4 @@
-/**
+	/**
  * @fileOverview Brush
  */
 import React, { Component, PropTypes } from 'react';
@@ -54,18 +54,24 @@ class Brush extends Component {
       endX: this.handleTravellerDown.bind(this, 'endX'),
     };
 
-    if (props.data && props.data.length) {
-      this.updateScale(props);
-    } else {
-      this.state = {};
+    this.state = {};
+
+  }
+
+  componentWillMount() {
+    if (this.props.data && this.props.data.length) {
+      this.updateScale(this.props);
+      const { startIndex, endIndex } = this.props;
+      this.setState({ startIndex, endIndex });
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const { data, width, x, travellerWidth } = this.props;
+    const { data, width, x, travellerWidth, startIndex, endIndex } = this.props;
 
     if (nextProps.data !== data) {
       this.updateScale(nextProps);
+      this.setState({ startIndex, endIndex });
     } else if (nextProps.width !== width || nextProps.x !== x ||
       nextProps.travellerWidth !== travellerWidth) {
       this.scale.range([nextProps.x, nextProps.x + nextProps.width - nextProps.travellerWidth]);
@@ -194,6 +200,7 @@ class Brush extends Component {
       startX: startX + delta,
       endX: endX + delta,
       slideMoveStartX: e.pageX,
+      ...newIndex,
     }, () => {
       if (onChange) {
         onChange(newIndex);
@@ -230,6 +237,7 @@ class Brush extends Component {
     this.setState({
       [movingTravellerId]: prevValue + delta,
       brushMoveStartX: e.pageX,
+      ...newIndex,
     }, () => {
       if (onChange) {
         onChange(newIndex);
@@ -245,13 +253,13 @@ class Brush extends Component {
       this.scale = scalePoint().domain(_.range(0, len))
                     .range([x, x + width - travellerWidth]);
       this.scaleValues = this.scale.domain().map(entry => this.scale(entry));
-      this.state = {
+      this.setState({
         isTextActive: false,
         isSlideMoving: false,
         isTravellerMoving: false,
         startX: this.scale(startIndex),
         endX: this.scale(endIndex),
-      };
+      });
     }
   }
 
@@ -333,9 +341,16 @@ class Brush extends Component {
   }
 
   renderText() {
-    const { startIndex, endIndex, y, height, travellerWidth,
-      stroke } = this.props;
+    const { y, height, travellerWidth, stroke, affectedCharts } = this.props;
+    let { startIndex, endIndex } = this.props;
     const { startX, endX } = this.state;
+
+		// if only other charts are affected, need to use our own state for the text
+		// as we won't necessarily get new props from the chart
+    if (affectedCharts === 'others') {
+      ({ startIndex, endIndex } = this.state);
+    }
+
     const offset = 5;
     const style = {
       pointerEvents: 'none',

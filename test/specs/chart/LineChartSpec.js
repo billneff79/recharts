@@ -292,7 +292,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
   const affectedChartsLineChart = ({ hasBrush = false, props }) =>
     <LineChart width={400} height={400} data={data} syncId="test">
       <Line isAnimationActive={false} type="monotone" dataKey="uv" stroke="#ff7300" />
-			{hasBrush ? <Brush {...props} /> : null}
+			{hasBrush ? <Brush dataKey="name" {...props} /> : null}
     </LineChart>;
 
   const totalChart = (props) =>
@@ -307,6 +307,15 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
     expect(lineDots.at(0).children().length).to.equal(numDots);
   };
 
+  const verifyBrushText = (wrapper, startIndex, endIndex) => {
+		// mouse-over the traveller to make the text appear
+    wrapper.find(Brush).get(0).handleEnterSlideOrTraveller();
+    const texts = wrapper.find('.recharts-brush-texts').find('.recharts-text');
+    expect(texts.length).to.equal(2);
+    expect(texts.at(0).text()).to.equal(data[startIndex].name);
+    expect(texts.at(1).text()).to.equal(data[endIndex].name);
+  };
+
   it('should sync both charts when no affectedCharts prop is supplied', () => {
 
     const wrapper = mount(totalChart());
@@ -316,6 +325,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// find the lineDots from both graphs.  Both should have 6 dots at this point
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+    verifyBrushText(wrapper, 0, 5);
 
 		// simulate a brush to only include the data elements at indices 2-4
     lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
@@ -323,6 +333,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// find the lineDots from both graphs.  Both should have 3 dots at this point
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 3 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
+    verifyBrushText(wrapper, 2, 4);
   });
 
   it('should sync both charts when affectedCharts="all" prop is supplied', () => {
@@ -334,6 +345,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// find the lineDots from both graphs.  Both should have 6 dots at this point
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+    verifyBrushText(wrapper, 0, 5);
 
 		// simulate a brush to only include the data elements at indices 2-4
     lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
@@ -341,6 +353,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// find the lineDots from both graphs.  Both should have 3 dots at this point
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 3 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
+    verifyBrushText(wrapper, 2, 4);
   });
 
   it('should sync only self chart when affectedCharts="self" prop is supplied', () => {
@@ -352,6 +365,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// find the lineDots from both graphs.  Both should have 6 dots at this point
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+    verifyBrushText(wrapper, 0, 5);
 
 		// simulate a brush to only include the data elements at indices 2-4
     lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
@@ -360,6 +374,7 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// first change shouldn't change
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 3 });
+    verifyBrushText(wrapper, 2, 4);
   });
 
   it('should sync only other chart when affectedCharts="others" prop is supplied', () => {
@@ -371,14 +386,26 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 		// find the lineDots from both graphs.  Both should have 6 dots at this point
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 6 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+    verifyBrushText(wrapper, 0, 5);
 
-		// simulate a brush to only include the data elements at indices 2-4
-    lineCharts.get(1).handleBrushChangeForThis({ startIndex: 2, endIndex: 4 });
+		// since props don't trickle down to Brush when affectedCharts="others"
+		// we can't cheat by using the Charts handleBrushChange method
+		// need to actually simulate mouse actions
+    const brush = wrapper.find(Brush).get(0);
+    brush.handleTravellerDown('startX', { pageX: brush.scale(0) });
+    brush.handleTravellerMove({ pageX: brush.scale(2) });
+    brush.handleUp();
+    verifyBrushText(wrapper, 2, 5);
+    brush.handleTravellerDown('endX', { pageX: brush.scale(5) });
+    brush.handleTravellerMove({ pageX: brush.scale(4) });
+    brush.handleUp();
+    verifyBrushText(wrapper, 2, 4);
 
 		// find the lineDots from both graphs.  Both should have 3 dots at this point
 		// first change shouldn't change
     verifyDotsForChild({ lineCharts, childIndex: 0, numDots: 3 });
     verifyDotsForChild({ lineCharts, childIndex: 1, numDots: 6 });
+
   });
 
 });
@@ -455,7 +482,6 @@ describe('<LineChart /> - startIndex and endIndex', () => {
     expect(brushProps.startIndex).to.equal(2);
     expect(brushProps.endIndex).to.equal(3);
 
-		// make sure brush still works
     wrapper.instance().handleBrushChangeForThis({ startIndex: 4, endIndex: 5 });
 
 		// makek sure the right dots are shown

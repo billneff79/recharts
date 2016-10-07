@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { changeNumberOfData } from './utils';
+/* eslint-disable import/no-unresolved, react/jsx-indent, react/prop-types, max-len,
+ 		react/jsx-first-prop-new-line, no-script-url */
 import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Brush,
-  ReferenceArea, ReferenceLine, ReferenceDot, ResponsiveContainer } from 'recharts';
+  ReferenceArea, ReferenceLine, ReferenceDot } from 'recharts';
 
-const data = [
+const dataInit = [
   { name: 'Page A', uv: 4000, pv: 2400, amt: 2400 },
   { name: 'Page B', uv: 3000, pv: 1398, amt: 2210 },
   { name: 'Page C', uv: 2000, pv: 9800, amt: 2290 },
@@ -12,7 +14,7 @@ const data = [
   { name: 'Page F', uv: 1220, pv: 3800, amt: 2500 },
   { name: 'Page G', uv: 2300, pv: 4300, amt: 2100 },
 ];
-const data01 = [
+const dataInit01 = [
   { day: '05-01', weather: 'sunny' },
   { day: '05-02', weather: 'sunny' },
   { day: '05-03', weather: 'cloudy' },
@@ -23,7 +25,7 @@ const data01 = [
   { day: '05-08', weather: 'sunny' },
   { day: '05-09', weather: 'sunny' },
 ];
-const data02 = [
+const dataInit02 = [
   { name: 'Page A', uv: 4000, pv: 2400, amt: 2400 },
   { name: 'Page B', uv: 3000, pv: 1398, amt: 2210 },
   { name: 'Page C', uv: 2000, pv: 9800, amt: 2290 },
@@ -31,83 +33,67 @@ const data02 = [
   { name: 'Page E', uv: 1890, pv: 4800, amt: 2181 },
 ];
 
-const initilaState = { data, data01, data02 };
+const initialState = { data: dataInit, data01: dataInit01, data02: dataInit02 };
 
-const CustomTooltip = React.createClass({
-  render() {
-    const { active, payload, external, label } = this.props;
+const CustomTooltip = () => {
+  const { active, payload, external, label } = this.props;
 
-    if (active) {
-      const style = {
-        padding: 6,
-        backgroundColor: '#fff',
-        border: '1px solid #ccc',
-      };
+  if (active) {
+    const style = {
+      padding: 6,
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
+    };
 
-      const currData = external.filter(entry => (entry.name === label))[0];
+    const currData = external.filter(entry => (entry.name === label))[0];
 
-      return (
+    return (
         <div className="area-chart-tooltip" style={style}>
-          <p>{payload[0].name + ' : '}<em>{payload[0].value}</em></p>
+          <p>{`${payload[0].name} : `}<em>{payload[0].value}</em></p>
           <p>{'uv : '}<em>{currData.uv}</em></p>
         </div>
       );
-    }
+  }
 
-    return null;
-  },
-});
+  return null;
+};
 
 const renderCustomizedActiveDot = (props) => {
-  const { cx, cy, stroke, index, dataKey } = props;
+  const { cx, cy, stroke, dataKey } = props;
 
-  return <path d={`M${cx - 2},${cy - 2}h4v4h-4Z`} fill={stroke} key={`dot-${dataKey}`}/>;
+  return <path d={`M${cx - 2},${cy - 2}h4v4h-4Z`} fill={stroke} key={`dot-${dataKey}`} />;
 };
 
 const renderLabel = (props) => {
   const { x, y, textAnchor, value, index } = props;
 
-  return <text x={x} y={y} dy={-10} textAnchor={textAnchor} key={`label-${index}`}>{value[1]}</text>
+  return <text x={x} y={y} dy={-10} textAnchor={textAnchor} key={`label-${index}`}>{value[1]}</text>;
 };
 
-const RenderRect = (props) => {
-  return <rect x={20} y={20} width={100} height={20} stroke="#000"/>;
-};
+export default class AreaChartDemo extends Component {
 
-function CustomizedAxisTick(props) {
-  const { x, y, stroke, payload } = props;
+  displayName = 'AreaChartDemo';
 
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={-12} textAnchor="end" fill="#999" fontSize="12">{payload.value}</text>
-    </g>
-  );
-}
-
-export default React.createClass({
-  displayName: 'AreaChartDemo',
-
-  getInitialState() {
-    return initilaState;
-  },
+  state = initialState;
 
   handleChangeData() {
-    this.setState(() => _.mapValues(initilaState, changeNumberOfData));
-  },
+		//eslint-disable-next-line
+    this.setState(() => _.mapValues(initialState, changeNumberOfData));
+  }
 
   render() {
-    const { data, data01, data02 } = this.state;
+    const { data, data01 } = this.state;
 
     return (
       <div className="area-charts">
         <a
-          href="javascript: void(0);"
+          href="javascript:;"
           className="btn update"
           onClick={this.handleChangeData}
         >
           change data
         </a>
-        <br/>
+        <br />
 
         <p>Stacked AreaChart</p>
         <div className="area-chart-wrapper">
@@ -115,7 +101,7 @@ export default React.createClass({
             margin={{ top: 20, right: 80, left: 20, bottom: 5 }}
             syncId="test"
           >
-            <XAxis dataKey="name" label="province"/>
+            <XAxis dataKey="name" label="province" />
             <YAxis />
             <Tooltip />
             <Area
@@ -157,7 +143,7 @@ export default React.createClass({
             stackOffset="expand"
             syncId="test"
           >
-            <XAxis />
+            <XAxis dataKey="name" />
             <YAxis />
             <Tooltip />
             <Area stackId="0"
@@ -237,7 +223,7 @@ export default React.createClass({
               yAxisId={2}
               stroke="#38abc8"
             />
-            <XAxis dataKey="name" interval={0}/>
+            <XAxis dataKey="name" interval={0} />
             <Area dataKey="uv" stroke="#ff7300" fill="#ff7300" strokeWidth={2} yAxisId={0} />
             <Area dataKey="pv" stroke="#387908" fill="#387908" strokeWidth={2} yAxisId={1} />
             <Area dataKey="amt" stroke="#38abc8" fill="#38abc8" strokeWidth={2} yAxisId={2} />
@@ -282,8 +268,8 @@ export default React.createClass({
             <Tooltip content={<CustomTooltip external={data} />} />
             <CartesianGrid stroke="#f5f5f5" />
             <ReferenceArea x1="Page A" x2="Page E" />
-            <ReferenceLine y={7500} stroke="#387908"/>
-            <ReferenceDot x="Page C" y={1398} r={10} fill="#387908" isFront/>
+            <ReferenceLine y={7500} stroke="#387908" />
+            <ReferenceDot x="Page C" y={1398} r={10} fill="#387908" isFront />
             <Area type="monotone"
               dataKey="pv"
               stroke="#ff7300"
@@ -293,10 +279,11 @@ export default React.createClass({
           </AreaChart>
         </div>
 
-        <p>AreaChart filled with linear gradient</p>
+        <p>AreaChart filled with linear gradient and overlay brush </p>
         <div>
           <AreaChart width={800} height={400} data={this.state.data}
             margin={{ top: 20, right: 80, left: 20, bottom: 5 }}
+            syncId="brushTest"
           >
             <defs>
               <linearGradient id="MyGradient" x1="0" y1="0" x2="0" y2="1">
@@ -317,13 +304,28 @@ export default React.createClass({
               dot
             />
           </AreaChart>
+					<AreaChart width={400} height={70} data={this.state.data}
+  syncId="brushTest"
+     >
+            <Area
+              type="monotone"
+              dataKey="uv"
+              stroke="#0088FE"
+              strokeWidth="2"
+              fillOpacity="1"
+              fill="gray"
+            />
+					<Brush dataKey="name" overlayChart affectedCharts="others" />
+          </AreaChart>
         </div>
+
 
         <p>AreaChart of discrete values</p>
         <div className="area-chart-wrapper">
           <AreaChart
-              width={400} height={400} data={data01}
-              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            width={400} height={400} data={data01}
+            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+          >
             <XAxis dataKey="day" />
             <YAxis type="category" />
             <Tooltip />
@@ -333,5 +335,5 @@ export default React.createClass({
 
       </div>
     );
-  },
-});
+  }
+}

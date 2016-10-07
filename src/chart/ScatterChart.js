@@ -377,15 +377,16 @@ class ScatterChart extends Component {
    * Draw axis
    * @param {Object} axis     The configuration of axis
    * @param {String} layerKey The key of layer
+	  * @param {Component} Axis The specific component type (e.g. XAxis)
    * @return {ReactElement}   The instance of axis
    */
-  renderAxis(axis, layerKey) {
+  renderAxis(axis, layerKey, Axis) {
     const { width, height } = this.props;
 
     if (axis && !axis.hide) {
       return (
         <Layer key={layerKey} className={layerKey}>
-          <CartesianAxis
+          <Axis
             {...axis}
             viewBox={{ x: 0, y: 0, width, height }}
             ticks={getTicksOfAxis(axis, true)}
@@ -494,8 +495,8 @@ class ScatterChart extends Component {
           {this.renderReferenceElements(xAxis, yAxis, offset, false, ReferenceArea)}
           {this.renderReferenceElements(xAxis, yAxis, offset, false, ReferenceLine)}
           {this.renderReferenceElements(xAxis, yAxis, offset, false, ReferenceDot)}
-          {this.renderAxis(xAxis, 'recharts-x-axis')}
-          {this.renderAxis(yAxis, 'recharts-y-axis')}
+          {this.renderAxis(xAxis, 'recharts-x-axis', XAxis)}
+          {this.renderAxis(yAxis, 'recharts-y-axis', YAxis)}
           {this.renderCursor(xAxis, yAxis, offset)}
           {this.renderItems(items, xAxis, yAxis, zAxis, offset)}
           {this.renderReferenceElements(xAxis, yAxis, offset, true, ReferenceArea)}

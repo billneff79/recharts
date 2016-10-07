@@ -30,13 +30,23 @@ class CartesianAxis extends Component {
     label: PropTypes.oneOfType([
       PropTypes.number, PropTypes.string, PropTypes.func, PropTypes.element,
     ]),
-    tick: PropTypes.oneOfType([
-      PropTypes.bool, PropTypes.func, PropTypes.object, PropTypes.element,
-    ]),
-    axisLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-    tickLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-
-    minLabelGap: PropTypes.number,
+    allowDecimals: PropTypes.bool,
+    hide: PropTypes.bool,
+    // The name of data displayed in the axis
+    name: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    // The unit of data displayed in the axis
+    unit: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    // The unique id of y-axis
+    yAxisId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    domain: PropTypes.arrayOf(PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.oneOf(['auto', 'dataMin', 'dataMax']),
+    ])),
+    // The key of data displayed in the axis
+    dataKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    // Ticks can be any type when the axis is the type of category
+    // Ticks must be numbers when the axis is the type of number
     ticks: PropTypes.oneOfType([
       PropTypes.arrayOf(PropTypes.shape({
         value: PropTypes.any,
@@ -44,9 +54,24 @@ class CartesianAxis extends Component {
       })),
       PropTypes.arrayOf(PropTypes.number),
     ]),
+    // The count of ticks
+    tickCount: PropTypes.number,
+    // The formatter function of tick
+    tickFormatter: PropTypes.func,
+    type: PropTypes.oneOf(['number', 'category']),
+    padding: PropTypes.shape({
+      top: PropTypes.number,
+      bottom: PropTypes.number,
+    }),
+    allowDataOverflow: PropTypes.bool,
+    tick: PropTypes.oneOfType([
+      PropTypes.bool, PropTypes.func, PropTypes.object, PropTypes.element,
+    ]),
+    axisLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
+    tickLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
+    minLabelGap: PropTypes.number,
     tickSize: PropTypes.number,
     stroke: PropTypes.string,
-    tickFormatter: PropTypes.func,
     ticksGenerator: PropTypes.func,
     interval: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   };
@@ -71,6 +96,7 @@ class CartesianAxis extends Component {
     // The width or height of tick
     tickSize: 6,
     interval: 'auto',
+    hide: false,
   };
 
   static getTicks(props) {

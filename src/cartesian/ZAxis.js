@@ -1,35 +1,27 @@
 /**
  * @fileOverview Z Axis
  */
-import { Component, PropTypes } from 'react';
-import pureRender from '../util/PureRender';
+import { PropTypes } from 'react';
+import CartesianAxis from './CartesianAxis';
 
-@pureRender
-class ZAxis extends Component {
+class ZAxis extends CartesianAxis {
 
   static displayName = 'ZAxis';
 
   static propTypes = {
-    // The name of data displayed in the axis
-    name: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    // The unit of data displayed in the axis
-    unit: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ...CartesianAxis.propTypes,
     // The unique id of z-axis
     zAxisId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    // The key of data displayed in the axis
-    dataKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     // The range of axis
     range: PropTypes.arrayOf(PropTypes.number),
   };
 
   static defaultProps = {
+    ...CartesianAxis.defaultProps,
     zAxisId: 0,
     range: [64, 64],
   };
 
-  render() {
-    return null;
-  }
 }
 
 export default ZAxis;

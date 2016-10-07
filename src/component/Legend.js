@@ -2,7 +2,7 @@
  * @fileOverview Legend
  */
 import React, { Component, PropTypes } from 'react';
-import pureRender from '../util/PureRender';
+import { shallowEqual } from '../util/PureRender';
 import ReactDOMServer from 'react-dom/server';
 import DefaultLegendContent from './DefaultLegendContent';
 import { getStyleString } from '../util/DOMUtils';
@@ -20,7 +20,6 @@ const renderContent = (content, props) => {
   return React.createElement(DefaultLegendContent, props);
 };
 
-@pureRender
 class Legend extends Component {
   static displayName = 'Legend';
 
@@ -102,6 +101,19 @@ class Legend extends Component {
     }
 
     return null;
+  }
+
+  shouldComponentUpdate({ payload, ...restProps }, nextState) {
+
+		// props.payload is sometimes generated every time -
+		// check that specially as object equality is likely to fail
+    const { payload: payloadOld, ...restPropsOld } = this.props;
+    if (payload.length !== payloadOld.length) return true;
+    for (let i = 0; i < payload.length; i++) {
+      if (!shallowEqual(payload[i], payloadOld[i])) return true;
+    }
+
+    return !shallowEqual(restProps, restPropsOld) || !shallowEqual(nextState, this.state);
   }
 
   getDefaultPosition(style) {

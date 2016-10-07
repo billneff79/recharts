@@ -709,7 +709,6 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
     verticalCoordinatesGenerator = ({ xAxis, width, height, offset }) =>
       getCoordinatesOfGrid(CartesianAxis.getTicks({
-        ...CartesianAxis.defaultProps,
         ...xAxis,
         ticks: getTicksOfAxis(xAxis, true),
         viewBox: { x: 0, y: 0, width, height },
@@ -717,7 +716,7 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
 
     horizontalCoordinatesGenerator = ({ yAxis, width, height, offset }) =>
       getCoordinatesOfGrid(CartesianAxis.getTicks({
-        ...CartesianAxis.defaultProps, ...yAxis,
+        ...yAxis,
         ticks: getTicksOfAxis(yAxis, true),
         viewBox: { x: 0, y: 0, width, height },
       }), offset.top, offset.top + offset.height);
@@ -734,9 +733,10 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
      * Draw axes
      * @param {Object} axisMap The configuration of all x-axes or y-axes
      * @param {String} name    The name of axes
+		 * @param {Component} Axis The Axis (e.g. XAxis)
      * @return {ReactElement}  The instance of x-axes
      */
-    renderAxes(axisMap, name) {
+    renderAxes(axisMap, name, Axis) {
       const { width, height } = this.props;
       const ids = axisMap && Object.keys(axisMap);
 
@@ -744,13 +744,13 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
         const axes = [];
 
         for (let i = 0, len = ids.length; i < len; i++) {
-          const axis = axisMap[ids[i]];
+          const axisProps = axisMap[ids[i]];
 
-          if (!axis.hide) {
+          if (!axisProps.hide) {
 
             axes.push((
-              <CartesianAxis
-                {...axis}
+              <Axis
+                {...axisProps}
                 key={`${name}-${ids[i]}`}
                 viewBox={{ x: 0, y: 0, width, height }}
                 ticksGenerator={this.axesTicksGenerator}
@@ -927,8 +927,8 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
             {this.renderReferenceElements(xAxisMap, yAxisMap, offset, false, ReferenceArea)}
             {this.renderReferenceElements(xAxisMap, yAxisMap, offset, false, ReferenceLine)}
             {this.renderReferenceElements(xAxisMap, yAxisMap, offset, false, ReferenceDot)}
-            {this.renderAxes(xAxisMap, 'x-axis')}
-            {this.renderAxes(yAxisMap, 'y-axis')}
+            {this.renderAxes(xAxisMap, 'x-axis', XAxis)}
+            {this.renderAxes(yAxisMap, 'y-axis', YAxis)}
             <ChartComponent
               {...this.props}
               {...this.state}

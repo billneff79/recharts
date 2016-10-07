@@ -1,7 +1,7 @@
 import React from 'react';
 import { expect } from 'chai';
 // eslint-disable-next-line import/no-unresolved
-import { AreaChart, Area, XAxis, YAxis, Tooltip, Brush, Legend, CartesianAxis } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, Brush, Legend } from 'recharts';
 import { mount, render } from 'enzyme';
 import sinon from 'sinon';
 
@@ -144,20 +144,16 @@ describe('<AreaChart />', () => {
 });
 
 describe('<AreaChart /> - Pure Rendering', () => {
-  const pureElements = [Area];
+  const pureElements = [Area, XAxis, YAxis, Legend];
 
   const spies = [];
-	// CartesianAxis is what is actually render for XAxis and YAxis
-  let axisSpy;
 
 	// spy on each pure element before each test, and restore the spy afterwards
   beforeEach(() => {
     pureElements.forEach((el, i) => (spies[i] = sinon.spy(el.prototype, 'render')));
-    axisSpy = sinon.spy(CartesianAxis.prototype, 'render');
   });
   afterEach(() => {
     pureElements.forEach((el, i) => spies[i].restore());
-    axisSpy.restore();
   });
 
   const chart = (
@@ -175,26 +171,22 @@ describe('<AreaChart /> - Pure Rendering', () => {
   it('should only render Area once when the mouse enters and moves', () => {
     const wrapper = mount(chart);
 
-    spies.forEach((el) => expect(el.callCount).to.equal(1));
-    expect(axisSpy.callCount).to.equal(2);
+    spies.forEach((el, i) => expect(el.callCount).to.equal(1, `${pureElements[i].name} Rendered more than once on initial load`));
 
     wrapper.simulate('mouseEnter', { pageX: 30, pageY: 200 });
     wrapper.simulate('mouseMove', { pageX: 200, pageY: 200 });
     wrapper.simulate('mouseLeave');
 
-    spies.forEach((el) => expect(el.callCount).to.equal(1));
-    expect(axisSpy.callCount).to.equal(2);
+    spies.forEach((el, i) => expect(el.callCount).to.equal(1, `${pureElements[i].name} Rendered more than once after mouse over events`));
   });
 
 	// protect against the future where someone might mess up our clean rendering
   it('should only render Area once when the brush moves but doesn\'t change start/end indices', () => {
     const wrapper = mount(chart);
 
-    spies.forEach((el) => expect(el.callCount).to.equal(1));
-    expect(axisSpy.callCount).to.equal(2);
+    spies.forEach((el) => expect(el.callCount).to.equal(1, `${el.constructor.displayName} Rendered more than once on initial load`));
     wrapper.instance().handleBrushChange({ startIndex: 0, endIndex: data.length - 1 });
-    spies.forEach((el) => expect(el.callCount).to.equal(1));
-    expect(axisSpy.callCount).to.equal(2);
+    spies.forEach((el) => expect(el.callCount).to.equal(1, `${el.constructor.displayName} Rendered more than once after noop brush change`));
   });
 
 });

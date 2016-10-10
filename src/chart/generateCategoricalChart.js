@@ -861,8 +861,11 @@ const generateCategoricalChart = (ChartComponent, GraphicalChild) => {
         overrideHeight = { height: offset.height };
       }
 
+      const onChange = [this.handleBrushChangeForThis];
+      if (brushItem.props.onChange) onChange.push(brushItem.props.onChange);
+
       return React.cloneElement(brushItem, {
-        onChange: this.handleBrushChangeForThis,
+        onChange,
         data,
         x: offset.left,
         y,

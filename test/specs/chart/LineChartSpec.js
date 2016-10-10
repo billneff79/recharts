@@ -408,6 +408,32 @@ describe('<LineChart /> - <Brush /> affectedCharts prop', () => {
 
   });
 
+  it('should call a supplied onChange function to Brush in addition to handleBrushChange', () => {
+
+    const onChangeSpy = sinon.spy();
+    const wrapper = mount(totalChart({ onChange: onChangeSpy }));
+
+    expect(onChangeSpy.callCount).to.equal(0);
+		// since props don't trickle down to Brush when affectedCharts="others"
+		// we can't cheat by using the Charts handleBrushChange method
+		// need to actually simulate mouse actions
+    const brush = wrapper.find(Brush).get(0);
+    brush.handleTravellerDown('startX', { pageX: brush.scale(0) });
+    brush.handleTravellerMove({ pageX: brush.scale(2) });
+    brush.handleUp();
+
+    expect(onChangeSpy.callCount).to.equal(1);
+    expect(onChangeSpy.getCall(0).args).to.eql([{ startIndex: 2, endIndex: 5 }]);
+
+    brush.handleTravellerDown('endX', { pageX: brush.scale(5) });
+    brush.handleTravellerMove({ pageX: brush.scale(4) });
+    brush.handleUp();
+
+    expect(onChangeSpy.callCount).to.equal(2);
+    expect(onChangeSpy.getCall(1).args).to.eql([{ startIndex: 2, endIndex: 4 }]);
+
+  });
+
 });
 
 

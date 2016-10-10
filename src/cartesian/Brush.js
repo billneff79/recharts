@@ -4,12 +4,11 @@
 import React, { Component, PropTypes } from 'react';
 import classNames from 'classnames';
 import { scalePoint } from 'd3-scale';
-import pureRender from '../util/PureRender';
+import { shallowEqual } from '../util/PureRender';
 import Layer from '../container/Layer';
 import Text from '../component/Text';
 import _ from 'lodash';
 
-@pureRender
 class Brush extends Component {
 
   static displayName = 'Brush';
@@ -31,7 +30,7 @@ class Brush extends Component {
     tickFormatter: PropTypes.func,
     affectedCharts: PropTypes.oneOf(['all', 'self', 'others']),
     overlayChart: PropTypes.bool,
-    onChange: PropTypes.func,
+    onChange: PropTypes.oneOfType([PropTypes.func, PropTypes.array]),
   };
 
   static defaultProps = {
@@ -69,6 +68,13 @@ class Brush extends Component {
   componentWillReceiveProps(nextProps) {
     const { data, width, x, travellerWidth, startIndex, endIndex } = this.props;
 
+		// when affectedCharts==='others', the props might not change for start/endIndex
+		// even though the underlying value does.  Only update the state values
+		// if the props have changed from their prior values
+    if (startIndex !== nextProps.startIndex || endIndex !== nextProps.endIndex) {
+      this.setState({ startIndex, endIndex });
+    }
+
     if (nextProps.data !== data) {
       this.updateScale(nextProps);
       this.setState({ startIndex, endIndex });
@@ -82,6 +88,14 @@ class Brush extends Component {
         endX: this.scale(nextProps.endIndex),
       });
     }
+  }
+
+  shouldComponentUpdate({ onChange, ...restNextProps }, nextState) {
+		// onChange could be an array which might be created new each time, so deep equal check it
+    const { onChange: onChangeOld, ...restOldProps } = this.props;
+
+    return !shallowEqual(onChange, onChangeOld) ||
+			!shallowEqual(restNextProps, restOldProps) || !shallowEqual(nextState, this.state);
   }
 
   componentWillUnmount() {
@@ -122,6 +136,17 @@ class Brush extends Component {
       startIndex: minIndex,
       endIndex: maxIndex,
     };
+  }
+
+	/*
+	 * Get the startIndex and endIndex from props, unless
+	 * affectedCharts is others, in which case you need get it off of state
+	 */
+  getCurrentIndex() {
+    if (this.props.affectedCharts === 'others') {
+      return { startIndex: this.state.startIndex, endIndex: this.state.endIndex };
+    }
+    return { startIndex: this.props.startIndex, endIndex: this.props.endIndex };
   }
 
   getTextOfTick(index) {
@@ -196,15 +221,18 @@ class Brush extends Component {
       endX: endX + delta,
     });
 
+    const isIndexChange = !shallowEqual(newIndex, this.getCurrentIndex());
+
     this.setState({
       startX: startX + delta,
       endX: endX + delta,
       slideMoveStartX: e.pageX,
       ...newIndex,
     }, () => {
-      if (onChange) {
-        onChange(newIndex);
-      }
+      if (!isIndexChange) return;
+      if (_.isArray(onChange)) {
+        onChange.forEach((f) => f(newIndex));
+      } else { onChange(newIndex); }
     });
   }
 
@@ -234,14 +262,17 @@ class Brush extends Component {
     params[movingTravellerId] = prevValue + delta;
     const newIndex = this.getIndex(params);
 
+    const isIndexChange = !shallowEqual(newIndex, this.getCurrentIndex());
+
     this.setState({
       [movingTravellerId]: prevValue + delta,
       brushMoveStartX: e.pageX,
       ...newIndex,
     }, () => {
-      if (onChange) {
-        onChange(newIndex);
-      }
+      if (!isIndexChange) return;
+      if (_.isArray(onChange)) {
+        onChange.forEach((f) => f(newIndex));
+      } else { onChange(newIndex); }
     });
   }
 
@@ -341,15 +372,10 @@ class Brush extends Component {
   }
 
   renderText() {
-    const { y, height, travellerWidth, stroke, affectedCharts } = this.props;
-    let { startIndex, endIndex } = this.props;
+    const { y, height, travellerWidth, stroke } = this.props;
     const { startX, endX } = this.state;
 
-		// if only other charts are affected, need to use our own state for the text
-		// as we won't necessarily get new props from the chart
-    if (affectedCharts === 'others') {
-      ({ startIndex, endIndex } = this.state);
-    }
+    const { startIndex, endIndex } = this.getCurrentIndex();
 
     const offset = 5;
     const style = {

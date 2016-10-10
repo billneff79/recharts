@@ -188,10 +188,11 @@ export const getPresentationAttributes = (el) => {
   if (!_.isObject(props)) { return null; }
 
   let out = null;
-  for (let i in props) {
+	// eslint-disable-next-line no-restricted-syntax
+  for (const i in props) {
     if (props.hasOwnProperty(i) && PRESENTATION_ATTRIBUTES[i]) {
       if (!out) out = {};
-      out[PRESENTATION_ATTRIBUTES[i]] = props[i];
+      out[i] = props[i];
     }
   }
   return out;
@@ -210,10 +211,11 @@ export const filterEventAttributes = (el) => {
   if (!_.isObject(props)) { return null; }
 
   let out = null;
-  for (let i in props) {
+	// eslint-disable-next-line no-restricted-syntax
+  for (const i in props) {
     if (props.hasOwnProperty(i) && EVENT_ATTRIBUTES[i]) {
       if (!out) out = {};
-      out[EVENT_ATTRIBUTES[i]] = props[i];
+      out[i] = props[i];
     }
   }
   return out;
@@ -229,12 +231,13 @@ const getEventHandler = (originalHandler, data, index) => (
 
 export const filterEventsOfChild = (props, data, index) => {
   if (!_.isObject(props)) { return null; }
-  
+
   let out = null;
-  for (let i in props) {
+	// eslint-disable-next-line no-restricted-syntax
+  for (const i in props) {
     if (props.hasOwnProperty(i) && EVENT_ATTRIBUTES[i] && _.isFunction(props[i])) {
       if (!out) out = {};
-      out[i] = getEventHandler(props[i], data, index)
+      out[i] = getEventHandler(props[i], data, index);
     }
   }
   return out;
@@ -289,4 +292,3 @@ export const filterSvgElements = (children) => {
 
   return svgElements;
 };
-

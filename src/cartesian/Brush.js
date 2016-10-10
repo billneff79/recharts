@@ -65,6 +65,11 @@ class Brush extends Component {
     }
   }
 
+  componentDidMount() {
+    addEventListener('mousemove', this.handleMove);
+    addEventListener('mouseup', this.handleUp);
+  }
+
   componentWillReceiveProps(nextProps) {
     const { data, width, x, travellerWidth, startIndex, endIndex } = this.props;
 
@@ -102,10 +107,8 @@ class Brush extends Component {
     this.scale = null;
     this.scaleValues = null;
 
-    if (this.leaveTimer) {
-      clearTimeout(this.leaveTimer);
-      this.leaveTimer = null;
-    }
+    removeEventListener('mousemove', this.handleMove);
+    removeEventListener('mouseup', this.handleUp);
   }
 
   getIndexInRange(range, x) {
@@ -157,11 +160,6 @@ class Brush extends Component {
   }
 
   handleMove = (e) => {
-    if (this.leaveTimer) {
-      clearTimeout(this.leaveTimer);
-      this.leaveTimer = null;
-    }
-
     if (this.state.isTravellerMoving) {
       this.handleTravellerMove(e);
     } else if (this.state.isSlideMoving) {
@@ -174,12 +172,6 @@ class Brush extends Component {
       isTravellerMoving: false,
       isSlideMoving: false,
     });
-  };
-
-  handleLeaveWrapper = () => {
-    if (this.state.isTravellerMoving || this.state.isSlideMoving) {
-      this.leaveTimer = setTimeout(this.handleUp, 1000);
-    }
   };
 
   handleEnterSlideOrTraveller = () => {
@@ -419,9 +411,6 @@ class Brush extends Component {
     return (
       <Layer
         className={layerClass}
-        onMouseUp={this.handleUp}
-        onMouseMove={this.handleMove}
-        onMouseLeave={this.handleLeaveWrapper}
       >
         {this.renderBackground()}
         {this.renderSlide(startX, endX)}

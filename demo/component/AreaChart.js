@@ -304,9 +304,17 @@ export default class AreaChartDemo extends Component {
               dot
             />
           </AreaChart>
-					<AreaChart width={400} height={70} data={this.state.data}
+
+					<style type="text/css">{`
+						.recharts-brush-background {
+						  fill-opacity: 0;
+						}
+					`}</style>
+
+					<AreaChart width={800} height={70} data={this.state.data}
+  margin={{ top: 20, right: 80, left: 20, bottom: 5 }}
   syncId="brushTest"
-     >
+					>
             <Area
               type="monotone"
               dataKey="uv"
@@ -315,7 +323,8 @@ export default class AreaChartDemo extends Component {
               fillOpacity="1"
               fill="gray"
             />
-					<Brush dataKey="name" overlayChart affectedCharts="others" />
+					<YAxis style={{ display: 'none' }} />
+					<Brush className="overlayBrush" dataKey="name" overlayChart affectedCharts="others" />
           </AreaChart>
         </div>
 

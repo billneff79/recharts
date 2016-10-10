@@ -299,6 +299,7 @@ class Brush extends Component {
 
     return (
       <rect
+        className="recharts-brush-background"
         stroke={stroke}
         fill={fill}
         x={x}

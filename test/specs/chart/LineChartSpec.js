@@ -2,7 +2,7 @@
 import React from 'react';
 import { expect } from 'chai';
 // eslint-disable-next-line import/no-unresolved
-import { LineChart, Line, Curve, XAxis, YAxis, CartesianAxis, Tooltip, Brush, Legend } from 'recharts';
+import { LineChart, Line, Curve, XAxis, YAxis, CartesianAxis, CartesianGrid, Tooltip, Brush, Legend } from 'recharts';
 import { mount, render } from 'enzyme';
 import sinon from 'sinon';
 
@@ -491,6 +491,27 @@ describe('<LineChart /> - startIndex and endIndex', () => {
     expect(brushProps.endIndex).to.equal(5);
   });
 
+  it('should accept new startIndex and endIndex after initial render', () => {
+
+    const wrapper = mount(chart());
+
+		// make sure the right dots are shown
+    verifyDots({ wrapper, numDots: 6, startIndex: 0, endIndex: 5 });
+
+		// make sure the brush is in the right position
+    let brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(0);
+    expect(brushProps.endIndex).to.equal(5);
+
+    wrapper.setProps({ startIndex: 4, endIndex: 5 });
+
+		// makek sure the right dots are shown
+    verifyDots({ wrapper, numDots: 2, startIndex: 4, endIndex: 5 });
+    brushProps = wrapper.find(Brush).at(0).props();
+    expect(brushProps.startIndex).to.equal(4);
+    expect(brushProps.endIndex).to.equal(5);
+  });
+
 
 });
 
@@ -624,6 +645,25 @@ describe('<LineChart /> - <Brush /> overlayChart prop', () => {
     ({ left, right, top, bottom, height, width } = wrapper.find(Line).at(0).props());
     expect({ left, right, top, bottom, height, width }).
 				to.eql({ left: 45, right: 5, top: 5, bottom: 95, width: 350, height: 300 });
+  });
+
+});
+
+describe('<LineChart /> - Cartesian Grid', () => {
+
+  const lineChart =
+	(<LineChart width={500} height={200} data={data}>
+		<XAxis dataKey="name" orientation="bottom" height={20} />
+		<CartesianGrid strokeDasharray="3 3" />
+		<Line dataKey="pv" stroke="blue" isAnimationActive={false} />
+		<Tooltip />
+	</LineChart>);
+
+  it('should display the right number of horizontal and vertical grid lines', () => {
+
+    const wrapper = mount(lineChart);
+    expect(wrapper.find('.recharts-cartesian-grid-horizontal line')).to.have.lengthOf(5);
+    expect(wrapper.find('.recharts-cartesian-grid-vertical line')).to.have.lengthOf(6);
   });
 
 });

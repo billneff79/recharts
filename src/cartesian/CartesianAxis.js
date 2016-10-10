@@ -79,13 +79,7 @@ class CartesianAxis extends Component {
   static defaultProps = {
     x: 0,
     y: 0,
-    width: 0,
-    height: 0,
     viewBox: { x: 0, y: 0, width: 0, height: 0 },
-    // The orientation of axis
-    orientation: 'bottom',
-    // The ticks
-    ticks: [],
 
     stroke: '#666',
     tickLine: true,
@@ -95,8 +89,11 @@ class CartesianAxis extends Component {
     minTickGap: 5,
     // The width or height of tick
     tickSize: 6,
+    tickCount: 5,
     interval: 'auto',
     hide: false,
+    allowDataOverflow: false,
+    allowDecimals: true,
   };
 
   static getTicks(props) {

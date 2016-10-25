@@ -184,9 +184,9 @@ describe('<AreaChart /> - Pure Rendering', () => {
   it('should only render Area once when the brush moves but doesn\'t change start/end indices', () => {
     const wrapper = mount(chart);
 
-    spies.forEach((el) => expect(el.callCount).to.equal(1, `${el.constructor.displayName} Rendered more than once on initial load`));
+    spies.forEach(el => expect(el.callCount).to.equal(1, `${el.constructor.displayName} Rendered more than once on initial load`));
     wrapper.instance().handleBrushChange({ startIndex: 0, endIndex: data.length - 1 });
-    spies.forEach((el) => expect(el.callCount).to.equal(1, `${el.constructor.displayName} Rendered more than once after noop brush change`));
+    spies.forEach(el => expect(el.callCount).to.equal(1, `${el.constructor.displayName} Rendered more than once after noop brush change`));
   });
 
 });

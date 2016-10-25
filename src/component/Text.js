@@ -56,7 +56,7 @@ class Text extends Component {
       );
       this.setState({ wordsByLines });
     } else {
-      const words = props.children ? props.children.toString().split(/\s+/) : [];
+      const words = !_.isNil(props.children) ? props.children.toString().split(/\s+/) : [];
       this.setState({ wordsByLines: [{ words }] });
     }
   }
@@ -69,8 +69,8 @@ class Text extends Component {
     svg.appendChild(text);
     document.body.appendChild(svg);
 
-    const words = props.children ? props.children.toString().split(/\s+/) : [];
-    const wordsWithComputedWidth = words.map(word => {
+    const words = !_.isNil(props.children) ? props.children.toString().split(/\s+/) : [];
+    const wordsWithComputedWidth = words.map((word) => {
       text.textContent = word;
       return { word, width: text.getComputedTextLength() };
     });
@@ -112,7 +112,7 @@ class Text extends Component {
       lineHeight,
       capHeight,
       className,
-      ...textProps,
+      ...textProps
     } = this.props;
     const { wordsByLines } = this.state;
     const { x, y } = textProps;
@@ -150,7 +150,7 @@ class Text extends Component {
         className={classNames('recharts-text', className)}
         textAnchor={textAnchor}
       >
-      {
+        {
         wordsByLines.map((line, index) => (
           <tspan x={x} dy={index === 0 ? startDy : lineHeight} key={index}>
             {line.words.join(' ')}

@@ -1,12 +1,13 @@
 // Karma configuration
 // Generated on Wed Mar 18 2015 11:41:18 GMT+0800 (CST)
+
 'use strict';
 
 var path = require('path');
 
 module.exports = function (config) {
   if (process.env.RELEASE)
-    config.singleRun = true;
+    { config.singleRun = true; }
 
   config.set({
 
@@ -43,20 +44,13 @@ module.exports = function (config) {
         ],
         loaders: [{
           test: /\.js$/,
-          include: [
-            /src|test|recharts/,
+          exclude: [
+            path.resolve('node_modules/'),
           ],
-          exclude: /node_modules/,
           loader: 'babel',
         }, {
           test: /\.json$/,
           loader: 'json',
-        }],
-        postLoaders: [{
-          test: /\.js$/,
-          include: /src/,
-          exclude: /node_modules/,
-          loader: 'istanbul-instrumenter',
         }],
       },
       externals: {
@@ -93,7 +87,6 @@ module.exports = function (config) {
       'karma-sourcemap-loader',
       'karma-firefox-launcher',
       'karma-chrome-launcher',
-      'istanbul-instrumenter-loader',
       'karma-coveralls',
     ],
 
@@ -103,13 +96,6 @@ module.exports = function (config) {
     reporters: ['coverage', 'coveralls', 'mocha'],
 
     coverageReporter: {
-      instrumenters: { isparta: require('isparta') },
-      instrumenter: {
-        '**/*.js': 'isparta',
-      },
-      instrumenterOptions: {
-        isparta: { babel: { presets: 'es2015' } },
-      },
       dir: 'test',
       reporters: [{
         type: 'html',
@@ -129,7 +115,7 @@ module.exports = function (config) {
 
     webpackMiddleware: {
       // webpack-dev-middleware configuration
-      noInfo: true,
+      stats: 'errors-only',
     },
 
     // web server port
